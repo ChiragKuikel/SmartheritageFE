@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "nativewind": "^2.0.11",
+    "react-native-ble-plx": "^3.2.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  }
+}
