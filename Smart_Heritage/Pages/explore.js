@@ -1,66 +1,94 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Platform,
   PermissionsAndroid,
   NativeModules,
   NativeEventEmitter,
   FlatList,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import BleManager from "react-native-ble-manager";
-import { useState } from "react";
-import { StyleSheet } from "react-native";
-import { ActivityIndicator } from "react-native";
 
 const ExploreScreen = ({ navigation }) => {
   const [isScanning, setScanning] = useState(false);
   const [devices, setDevices] = useState([]);
+
   const BleManagerModule = NativeModules.BleManager;
   const BleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
-  //scan available devices
-  const handleGetAvailableDevices = () => {
-    BleManager.getDiscoveredPeripherals().then((peripherals) => {
-      // Success code
-      if (peripherals.length === 0) {
-        console.log("No device found");
-        startScanning();
-      } else {
-        console.log(peripherals);
-        //first filter out devices with required ID
-        const filteredDevices = peripherals.filter(
-          (item) =>
-            item.name !== null &&
-            (item.id == "E4:65:B8:83:DC:62" ||
-              item.id == "E4:65:B8:83:F6:AA" ||
-              item.id == "E4:65:B8:83:D8:8E")
-        );
-        setDevices((prevDevices) => {
-          // Combine previous devices with new ones (avoid duplicates)
-          const newDevices = filteredDevices.filter(
-            (newDevice) =>
-              !prevDevices.some((device) => device.id === newDevice.id)
-          );
-          return [...prevDevices, ...newDevices];
+  // Start scanning for BLE devices
+  const startScanning = () => {
+    if (!isScanning) {
+      BleManager.scan([], 5, true)
+        .then(() => {
+          console.log("Scan started");
+          setScanning(true);
+        })
+        .catch((err) => {
+          console.error("Scan error:", err);
         });
-      }
-    });
+    }
   };
 
-  useEffect(() => {
-    let stopListener = BleManagerEmitter.addListener(
-      "BleManagerStopScan",
-      () => {
-        setScanning(false);
-        handleGetAvailableDevices();
-        console.log("stop scan");
-      }
-    );
-    return () => stopListener.remove();
-  }, []);
- 
+  // Fetch and update discovered devices
+  const handleGetAvailableDevices = () => {
+    BleManager.getDiscoveredPeripherals()
+      .then((peripherals) => {
+        if (peripherals.length === 0) {
+          console.log("No device found");
+          startScanning();
+        } else {
+          console.log("Discovered Peripherals:", peripherals);
 
+          // Filter devices based on specific IDs
+          const filteredDevices = peripherals.filter(
+            (item) =>
+              item.name !== null &&
+              (item.id === "E4:65:B8:83:DC:62" ||
+                item.id === "E4:65:B8:83:F6:AA" ||
+                item.id === "E4:65:B8:83:D8:8E")
+          );
+
+          setDevices((prevDevices) => {
+            // Update RSSI for existing devices and add new ones
+            const updatedDevices = filteredDevices.map((newDevice) => {
+              const existingDevice = prevDevices.find(
+                (device) => device.id === newDevice.id
+              );
+              return existingDevice
+                ? { ...existingDevice, rssi: newDevice.rssi }
+                : newDevice;
+            });
+
+            // Merge updated devices with previous devices
+            const combinedDevices = [
+              ...updatedDevices,
+              ...prevDevices.filter(
+                (prevDevice) =>
+                  !updatedDevices.some(
+                    (updatedDevice) => updatedDevice.id === prevDevice.id
+                  )
+              ),
+            ];
+
+            // Find the device with the highest RSSI
+            const highestRssiDevice = combinedDevices.reduce((max, device) =>
+              device.rssi > (max?.rssi ?? -Infinity) ? device : max
+            );
+
+            console.log("Highest RSSI Device:", highestRssiDevice);
+            return highestRssiDevice ? [highestRssiDevice] : [];
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching peripherals:", error);
+      });
+  };
+
+  // Permissions for BLE
   const requestPermission = async () => {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -73,99 +101,97 @@ const ExploreScreen = ({ navigation }) => {
     }
   };
 
-  //code to start scan
-  const startScanning = () => {
-    if (!isScanning) {
-      BleManager.scan([], 10, true)
-        .then(() => {
-          // Success code
-          console.log("Scan started");
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-      setScanning(true);
-    }
-  };
+  // Listener for stop scan event
   useEffect(() => {
-    BleManager.start({ showAlert: false }).then(() => {
-      // Success code
-      console.log("Module initialized");
-    });
-  });
+    const stopListener = BleManagerEmitter.addListener(
+      "BleManagerStopScan",
+      () => {
+        setScanning(false);
+        handleGetAvailableDevices();
+        console.log("Scan stopped");
+      }
+    );
+    return () => stopListener.remove();
+  }, []);
+
+  // Initialize BLE Manager
+  useEffect(() => {
+    BleManager.start({ showAlert: false })
+      .then(() => {
+        console.log("BLE Module initialized");
+      })
+      .catch((err) => console.error("Error initializing BLE module:", err));
+  }, []);
+
+  // Enable Bluetooth and request permissions
   useEffect(() => {
     BleManager.enableBluetooth()
       .then(() => {
-        // Success code
-        console.log("The bluetooth is already enabled or the user confirm");
+        console.log("Bluetooth is enabled");
         requestPermission();
       })
       .catch((error) => {
-        // Failure code
-        console.log("The user refuse to enable bluetooth");
+        console.error("Bluetooth enabling error:", error);
       });
   }, []);
 
+  // Periodic scanning
   useEffect(() => {
-    // Set up the repeated scanning every 5 seconds
     const interval = setInterval(() => {
       if (!isScanning) {
         startScanning();
       }
-    }, 5000);
+    }, 3000);
 
-    // Clean up the interval on component unmount
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); // Cleanup interval
   }, [isScanning]);
-  const renderItem = ({ item, index }) => {
-    return (
+
+  // Render a single BLE device
+  const renderItem = ({ item }) => (
+    <View>
       <View style={styles.bleCard}>
         <Text>{item.name}</Text>
         <Text>{item.id}</Text>
         <Text>{item.rssi}</Text>
       </View>
-    );
-  };
+      <Text>You are near {item.name}</Text>
+    </View>
+  );
 
-  //FE
+  // UI
   return (
-    <View>
-      <View style={StyleSheet.container}>
-        {isScanning ? (
-          <View style={styles.ripple}>
-            <Text> Scanning...</Text>
-            <ActivityIndicator size="large" style={styles.ripple} />
-          </View>
-        ) : (
-          <View>
-            <FlatList
-              data={devices}
-              keyExtractor={(item) => item.id || item.uuid}
-              renderItem={renderItem}
-            />
-          </View>
-        )}
-      </View>
+    <View style={styles.container}>
+      {isScanning ? (
+        <View style={styles.ripple}>
+          <Text>Scanning...</Text>
+          <ActivityIndicator size="large" style={styles.ripple} />
+        </View>
+      ) : (
+        <FlatList
+          data={devices}
+          keyExtractor={(item) => item.id || item.uuid}
+          renderItem={renderItem}
+        />
+      )}
     </View>
   );
 };
+
+// Styles
 const styles = StyleSheet.create({
-  txt: {
-    color: "black",
-  },
   container: {
     flex: 1,
   },
   ripple: {
     flex: 1,
-    justifyContent: "Center",
+    justifyContent: "center",
     alignItems: "center",
   },
   bleCard: {
     width: "90%",
     padding: 10,
     alignSelf: "center",
-    marginVerical: 10,
+    marginVertical: 10,
     backgroundColor: "grey",
     elevation: 5,
     borderRadius: 5,
@@ -173,4 +199,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
+
 export default ExploreScreen;
