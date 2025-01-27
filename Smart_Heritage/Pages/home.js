@@ -12,14 +12,23 @@ import {
 import { SearchBar } from "@rneui/themed";
 
 const HomePage = ({ navigation }) => {
+  const handleLoginPress = () => {
+    navigation.navigate("Login");
+  };
+  const handleSignUpPress = () => {
+    navigation.navigate("SignUp");
+  };
   const handleExplorePress = () => {
-    navigation.navigate("Explore");
+    navigation.navigate("Download");
   };
   const handleExplorePress2 = () => {
     navigation.navigate("About Us");
   };
   const handleAddPress = () => {
-    navigation.navigate("bluetooth"); // Replace 'NewPage' with the actual page name.
+    navigation.navigate("bluetooth");
+  };
+  const handleLearnToUse = () => {
+    navigation.navigate("learnToUse");
   };
   const [text, setText] = useState();
   const updateText = (value) => {
@@ -38,6 +47,11 @@ const HomePage = ({ navigation }) => {
           round
           style={styles.searchybar}
         />
+        <View style={styles.authButtons}>
+          <Button title="Login" onPress={handleLoginPress} />
+          <Button title="Signup" onPress={handleSignUpPress} />
+        </View>
+
         <TouchableHighlight
           underlayColor={"lightgrey"}
           onPress={handleExplorePress2}
@@ -49,7 +63,7 @@ const HomePage = ({ navigation }) => {
         </TouchableHighlight>
         <TouchableHighlight
           underlayColor={"lightgrey"}
-          onPress={handleExplorePress}
+          onPress={handleLearnToUse}
         >
           <View style={styles.explain}>
             <Image source={require("../Patan2.png")} style={styles.img} />
@@ -102,6 +116,15 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
+  authButtons: {
+    display: "flex",
+    flexDirection: "row",
+    alignSelf: "flex-end",
+    gap: 4,
+    borderRadius: 10,
+    padding: 4,
+  },
+
   floatingButton: {
     position: "absolute",
     bottom: 20,

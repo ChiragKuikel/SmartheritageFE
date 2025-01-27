@@ -8,10 +8,16 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  Button, ScrollView,
 } from "react-native";
 import BleManager from "react-native-ble-manager";
 
+
 const ExploreScreen = ({ navigation }) => {
+  const handleInfoPress = (name) => {
+    navigation.navigate("buildingInfoName",{name});
+  };
+  
   const [isScanning, setScanning] = useState(false);
   const [devices, setDevices] = useState([]);
 
@@ -31,6 +37,7 @@ const ExploreScreen = ({ navigation }) => {
         });
     }
   };
+
 
   // Fetch and update discovered devices
   const handleGetAvailableDevices = () => {
@@ -75,7 +82,8 @@ const ExploreScreen = ({ navigation }) => {
 
             // Find the device with the highest RSSI
             const highestRssiDevice = combinedDevices.reduce((max, device) =>
-              device.rssi > (max?.rssi ?? -Infinity) ? device : max
+              device.rssi > (max?.rssi ?? -Infinity) ? device : max,
+            { rssi: -Infinity } 
             );
 
             console.log("Highest RSSI Device:", highestRssiDevice);
@@ -154,7 +162,10 @@ const ExploreScreen = ({ navigation }) => {
         <Text>{item.id}</Text>
         <Text>{item.rssi}</Text>
       </View>
-      <Text>You are near {item.name}</Text>
+      <Button 
+  title={`You are near " ${item.name} " CLICK TO VIEW INFO`} 
+onPress={()=>{handleInfoPress(item.name)}} 
+/>
     </View>
   );
 
@@ -173,6 +184,7 @@ const ExploreScreen = ({ navigation }) => {
           renderItem={renderItem}
         />
       )}
+      
     </View>
   );
 };
@@ -198,6 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+ 
 });
 
 export default ExploreScreen;
