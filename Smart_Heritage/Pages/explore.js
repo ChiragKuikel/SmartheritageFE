@@ -8,16 +8,57 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  Button, ScrollView,
+  Button,
+  ScrollView,
+  Image,
+  TouchableOpacity,
 } from "react-native";
 import BleManager from "react-native-ble-manager";
+import assets from "../assets/assets";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
 
-
+const tabNavigator2 = () => {
+  <Tab.Navigator
+    initialRouteName="homeName"
+    screenOptions={({ route }) => ({
+      tabBarIcon: ({ focused, color, size }) => {
+        let iconName;
+        let rn = route.name;
+        if (rn === homeName) {
+          iconName = focused ? "home" : "home-outline";
+        } else if (rn === Download) {
+          iconName = focused ? "list" : "list-outline";
+        } else if (rn === settingsName) {
+          iconName = focused ? "settings" : "settings-outline";
+        }
+        return <Ionicons name={iconName} size={size} color={color} />;
+      },
+    })}
+  >
+    <Tab.Screen name={homeName} component={HomePage} />
+    <Tab.Screen name={Download} component={DownloadData} />
+    {/*<Tab.Screen name={settingsName} component={{}} /> Removing settings for now coz no functionality*/}
+    <Tab.Screen name={aboutName} component={AboutPage} />
+  </Tab.Navigator>;
+};
 const ExploreScreen = ({ navigation }) => {
-  const handleInfoPress = (name) => {
-    navigation.navigate("buildingInfoName",{name});
+  const tab = createBottomTabNavigator();
+  const homeName = "Home";
+  const Download = "Download";
+  const settingsName = "Settings";
+  const aboutName = "Aboutus";
+
+  const imageMap = {
+    "Krishna Mandir": require("../assets/Krishnamandir.jpg"),
+    "Bhimsen Temple": require("../assets/bhimsenmandir.jpg"),
+    "Taleju Bhawani Temple": require("../assets/talejubhawanimandir.jpg"),
+    KrishnaMandir: require("../assets/Krishnamandir.jpg"),
   };
-  
+  const handleInfoPress = (name) => {
+    navigation.navigate("buildingInfoName", { name });
+  };
+
   const [isScanning, setScanning] = useState(false);
   const [devices, setDevices] = useState([]);
 
@@ -37,7 +78,6 @@ const ExploreScreen = ({ navigation }) => {
         });
     }
   };
-
 
   // Fetch and update discovered devices
   const handleGetAvailableDevices = () => {
@@ -81,9 +121,10 @@ const ExploreScreen = ({ navigation }) => {
             ];
 
             // Find the device with the highest RSSI
-            const highestRssiDevice = combinedDevices.reduce((max, device) =>
-              device.rssi > (max?.rssi ?? -Infinity) ? device : max,
-            { rssi: -Infinity } 
+            const highestRssiDevice = combinedDevices.reduce(
+              (max, device) =>
+                device.rssi > (max?.rssi ?? -Infinity) ? device : max,
+              { rssi: -Infinity }
             );
 
             console.log("Highest RSSI Device:", highestRssiDevice);
@@ -156,17 +197,20 @@ const ExploreScreen = ({ navigation }) => {
 
   // Render a single BLE device
   const renderItem = ({ item }) => (
-    <View>
-      <View style={styles.bleCard}>
-        <Text>{item.name}</Text>
-        <Text>{item.id}</Text>
-        <Text>{item.rssi}</Text>
-      </View>
-      <Button 
-  title={`You are near " ${item.name} " CLICK TO VIEW INFO`} 
-onPress={()=>{handleInfoPress(item.name)}} 
-/>
-    </View>
+    <TouchableOpacity
+      style={styles.bleCard}
+      onPress={() => {
+        handleInfoPress(item.name);
+      }}
+    >
+      <Image source={imageMap[item.name]} style={styles.buildingimage} />
+      <Text style={{ fontSize: 18, left: 5, fontWeight: "bold" }}>
+        {`You are near " ${item.name} " `}
+      </Text>
+      <Text style={{ position: "absolute", bottom: 0, right: 10, fontSize: 9 }}>
+        CLICK TO VIEW INFO
+      </Text>
+    </TouchableOpacity>
   );
 
   // UI
@@ -174,17 +218,18 @@ onPress={()=>{handleInfoPress(item.name)}}
     <View style={styles.container}>
       {isScanning ? (
         <View style={styles.ripple}>
-          <Text>Scanning...</Text>
-          <ActivityIndicator size="large" style={styles.ripple} />
+          <Text style={{ color: "white" }}>Scanning...</Text>
+          <ActivityIndicator size="small" style={styles.ripple} />
         </View>
       ) : (
-        <FlatList
-          data={devices}
-          keyExtractor={(item) => item.id || item.uuid}
-          renderItem={renderItem}
-        />
+        <Text style={styles.rippleText}>Scanning stopped...</Text>
       )}
-      
+
+      <FlatList
+        data={devices}
+        keyExtractor={(item) => item.id || item.uuid}
+        renderItem={renderItem}
+      />
     </View>
   );
 };
@@ -193,24 +238,35 @@ onPress={()=>{handleInfoPress(item.name)}}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#1a434e",
   },
   ripple: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  rippleText: {
+    display: "flex",
+    textAlign: "right",
+    color: "white",
   },
   bleCard: {
-    width: "90%",
-    padding: 10,
-    alignSelf: "center",
-    marginVertical: 10,
-    backgroundColor: "grey",
-    elevation: 5,
-    borderRadius: 5,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    display: "flex",
+    flexDirection: "column",
+    backgroundColor: "white",
+    borderRadius: 10,
+    margin: 15,
+    height: 350,
+    justifyContent: "center",
+    position: "relative,",
   },
- 
+  buildingimage: {
+    width: 300,
+    alignSelf: "center",
+    height: 300,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
 });
 
 export default ExploreScreen;

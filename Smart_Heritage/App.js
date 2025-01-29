@@ -21,6 +21,7 @@ const Download = "Download";
 const settingsName = "Settings";
 const aboutName = "Aboutus";
 
+
 function Maintab() {
   return (
     <Tab.Navigator
@@ -44,6 +45,7 @@ function Maintab() {
       <Tab.Screen name={Download} component={DownloadData} />
       {/*<Tab.Screen name={settingsName} component={{}} /> Removing settings for now coz no functionality*/}
       <Tab.Screen name={aboutName} component={AboutPage} />
+      
     </Tab.Navigator>
   );
 }
