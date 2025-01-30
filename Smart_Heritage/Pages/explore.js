@@ -200,7 +200,7 @@ const ExploreScreen = ({ navigation }) => {
     <TouchableOpacity
       style={styles.bleCard}
       onPress={() => {
-        handleInfoPress(item.name);
+        handleInfoPress(item.name); //item.name huna parne ho
       }}
     >
       <Image source={imageMap[item.name]} style={styles.buildingimage} />
@@ -226,7 +226,7 @@ const ExploreScreen = ({ navigation }) => {
       )}
 
       <FlatList
-        data={devices}
+        data={devices} //datadevices huna parne ho yesma
         keyExtractor={(item) => item.id || item.uuid}
         renderItem={renderItem}
       />
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     position: "relative,",
   },
   buildingimage: {
-    width: 300,
+    width: "95%",
     alignSelf: "center",
     height: 300,
     borderRadius: 20,

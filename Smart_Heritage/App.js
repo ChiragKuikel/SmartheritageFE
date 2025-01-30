@@ -45,7 +45,6 @@ function Maintab() {
       <Tab.Screen name={Download} component={DownloadData} />
       {/*<Tab.Screen name={settingsName} component={{}} /> Removing settings for now coz no functionality*/}
       <Tab.Screen name={aboutName} component={AboutPage} />
-      
     </Tab.Navigator>
   );
 }
@@ -64,7 +63,6 @@ export default function App() {
         <Stack.Screen name="buildingInfoName" component={BuildingInfo} />
         <Stack.Screen name="learnToUse" component={LearnToUse} />
         <Stack.Screen name="Login" component={Login} />
-
         <Stack.Screen name="SignUp" component={Signup} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,6 +7,7 @@ import {
   ScrollView,
   Button,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { Image } from "react-native";
@@ -13,6 +15,8 @@ import assets from "../assets/assets";
 const BuildingInfo = ({ route }) => {
   const [fileData, setFileData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
+  const [reloadbutton, setReloadbutton] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const { name } = route.params;
   const imageMap = {
     "Krishna Mandir": require("../assets/Krishnamandir.jpg"),
@@ -54,18 +58,35 @@ const BuildingInfo = ({ route }) => {
     }
   };
 
+    useEffect(
+      () => {
+        readFile();
+      },[]
+    )
+    useEffect(
+    () =>{
+      if(hasMounted){
+      setReloadbutton(true);
+      }
+      else{
+        setHasMounted(true);
+      }
+    },[name]
+    )
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Building: {name}</Text>
-      <Button title="View Info" onPress={readFile} />
-      <ScrollView style={styles.dataContainer}>
-        {filteredData ? (
-          <View>
-            <Image
+      {reloadbutton? <TouchableOpacity style={styles.floatingbutton} onPress={readFile}><Text> {`You are near ${name}`}</Text></TouchableOpacity> : <Text>You are still near {name}</Text>}
+      <Image
               source={imageMap[name]} // 'Krishnamandir ko thau ma name rakhna paryo'
               style={styles.image}
               resizeMode="contain"
             />
+      <View style={styles.dataContainer}>
+        <Text style={styles.heading}>{name}</Text>
+      <ScrollView >
+        {filteredData ? (
+          <View>
+
             <Text style={styles.fileText}>
               <Text style={styles.bold}>Details:</Text> {filteredData.Details}
             </Text>
@@ -81,10 +102,11 @@ const BuildingInfo = ({ route }) => {
           </View>
         ) : (
           <Text style={styles.fileText}>
-            No data available. Click "View info" to load.
+            No data available.
           </Text>
         )}
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -95,19 +117,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
+    position:'relative',
   },
   text: {
     fontSize: 24,
     color: "black",
     marginBottom: 10,
   },
+  heading: {
+    fontSize: 32,
+    color: "black",
+    marginBottom: 10,
+    textAlign:'center',
+  },
   dataContainer: {
-    marginTop: 20,
-    width: "90%",
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 10,
+    width: "100%",
+    padding:30,
+    backgroundColor: "white",
     maxHeight: 300,
+    borderTopLeftRadius: 30,
+    borderBottomLeftRadius: 0,
+    borderTopRightRadius: 30,
+    borderBottomRightRadius: 0,
+    marginTop:-30,
   },
   fileText: {
     fontSize: 16,
@@ -119,9 +151,17 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 10,
+    height: "60%",
+    marginBottom: 0,
+    zIndex:10
+    
+  },
+  floatingbutton:{
+    position:'absolute',
+    top:0,
+    right:0,
+    backgroundColor:'red',
+    zIndex:30
   },
 });
 
