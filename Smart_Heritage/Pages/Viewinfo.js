@@ -75,11 +75,45 @@ const BuildingInfo = ({ route }) => {
     )
   return (
     <View style={styles.container}>
-      {reloadbutton? <TouchableOpacity style={styles.floatingbutton} onPress={readFile}><Text> {`You are near ${name}`}</Text></TouchableOpacity> : <Text>You are still near {name}</Text>}
+      {reloadbutton?  <View
+      style={{
+        position: 'absolute',
+        top: 10,
+        left: 20,
+        right: 20,
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+        zIndex:20,
+      }}
+    >
+      <Image
+        source={assets.Krishnamandir} // Replace with your avatar URL
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          marginRight: 10,
+        }}
+      />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 14 }}>You are near "Bhimsen Temple"</Text>
+        <TouchableOpacity>
+          <Text style={{ color: '#007bff', marginTop: 5 }}>Click to explore</Text>
+        </TouchableOpacity>
+      </View>
+    </View>: <Text>You are still near {name}</Text>}
       <Image
               source={imageMap[name]} // 'Krishnamandir ko thau ma name rakhna paryo'
               style={styles.image}
-              resizeMode="contain"
+              resizeMode="cover"
             />
       <View style={styles.dataContainer}>
         <Text style={styles.heading}>{name}</Text>
@@ -129,22 +163,27 @@ const styles = StyleSheet.create({
     color: "black",
     marginBottom: 10,
     textAlign:'center',
+    color:'white',
   },
   dataContainer: {
     width: "100%",
     padding:30,
-    backgroundColor: "white",
     maxHeight: 300,
     borderTopLeftRadius: 30,
     borderBottomLeftRadius: 0,
     borderTopRightRadius: 30,
     borderBottomRightRadius: 0,
+    backgroundColor:'#1a434e',
+    zIndex:20,
     marginTop:-30,
+    textDecorationColor:'white'
+    
   },
   fileText: {
     fontSize: 16,
     color: "#333",
     marginBottom: 10,
+    color:'white',
   },
   bold: {
     fontWeight: "bold",

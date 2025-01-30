@@ -200,7 +200,7 @@ const ExploreScreen = ({ navigation }) => {
     <TouchableOpacity
       style={styles.bleCard}
       onPress={() => {
-        handleInfoPress(item.name); //item.name huna parne ho
+        handleInfoPress('Krishna Mandir'); //item.name huna parne ho
       }}
     >
       <Image source={imageMap[item.name]} style={styles.buildingimage} />

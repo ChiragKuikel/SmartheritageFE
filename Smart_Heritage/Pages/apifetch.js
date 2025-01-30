@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
 
 export default DownloadData; */
 import React from "react";
-import { StyleSheet, Button, View, Alert,Text} from "react-native";
+import { StyleSheet, Button, View, Alert, Text } from "react-native";
 import * as FileSystem from "expo-file-system";
 
 export default function DownloadData() {
@@ -123,7 +123,7 @@ export default function DownloadData() {
   return (
     <View style={styles.container}>
       <Button title="Download and Save Locally" onPress={downloadFromUrl} />
-      
+
       <Text></Text>
       <Button title="View Saved File Info" onPress={viewFile} />
     </View>
