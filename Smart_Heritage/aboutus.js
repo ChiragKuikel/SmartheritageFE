@@ -1,23 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import assets from './assets/assets';
 
 const AboutPage = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.gradient}>
-        <Image source={require('./Logo.png')} style={styles.logo} />
-        <Text style={styles.title}>Welcome to Our App!</Text>
+      <View style={styles.gradient}>
+        <Image source={assets.Mainlogo} style={styles.logo} />
+        <Text style={styles.title}>Welcome to Smart Heritage!</Text>
         <Text style={styles.paragraph}>
-          Our innovative app revolutionizes the way tourists explore heritage sites by serving as a digital guide. Utilizing the power of ESP32, the app seamlessly connects with users' mobile devices to provide real-time information about their location.
+          Smart Heritage revolutionizes the way tourists explore heritage sites by serving as a digital guide. Utilizing the power of ESP32, the app seamlessly connects with user's mobile devices to provide real-time information about their location.
         </Text>
         <Text style={styles.paragraph}>
           As tourists approach various points of interest, the app automatically detects their proximity and delivers detailed descriptions, historical facts, and other relevant content about the site.
         </Text>
-        <Text style={styles.paragraph}>
-          This interactive experience is enhanced with multimedia elements, making your exploration more engaging and informative.
-        </Text>
-      </LinearGradient>
+        
+     </View>
     </ScrollView>
   );
 };
@@ -28,6 +26,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor:"#1a434e",
   },
   gradient: {
     flex: 1,
@@ -35,11 +34,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     padding: 20,
+    
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+    width: 150,
+    height: 150,
+    marginBottom: 1,
   },
   title: {
     fontSize: 24,

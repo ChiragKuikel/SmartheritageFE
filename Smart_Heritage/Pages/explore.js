@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,57 +14,20 @@ import {
   TouchableOpacity,
 } from "react-native";
 import BleManager from "react-native-ble-manager";
-import assets from "../assets/assets";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
-
-const tabNavigator2 = () => {
-  <Tab.Navigator
-    initialRouteName="homeName"
-    screenOptions={({ route }) => ({
-      tabBarIcon: ({ focused, color, size }) => {
-        let iconName;
-        let rn = route.name;
-        if (rn === homeName) {
-          iconName = focused ? "home" : "home-outline";
-        } else if (rn === Download) {
-          iconName = focused ? "list" : "list-outline";
-        } else if (rn === settingsName) {
-          iconName = focused ? "settings" : "settings-outline";
-        }
-        return <Ionicons name={iconName} size={size} color={color} />;
-      },
-    })}
-  >
-    <Tab.Screen name={homeName} component={HomePage} />
-    <Tab.Screen name={Download} component={DownloadData} />
-    {/*<Tab.Screen name={settingsName} component={{}} /> Removing settings for now coz no functionality*/}
-    <Tab.Screen name={aboutName} component={AboutPage} />
-  </Tab.Navigator>;
-};
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { MyContext } from "../Provider";
 const ExploreScreen = ({ navigation }) => {
-  const tab = createBottomTabNavigator();
-  const homeName = "Home";
-  const Download = "Download";
-  const settingsName = "Settings";
-  const aboutName = "Aboutus";
-
   const imageMap = {
     "Krishna Mandir": require("../assets/Krishnamandir.jpg"),
     "Bhimsen Temple": require("../assets/bhimsenmandir.jpg"),
     "Taleju Bhawani Temple": require("../assets/talejubhawanimandir.jpg"),
     KrishnaMandir: require("../assets/Krishnamandir.jpg"),
   };
-  const handleInfoPress = (name) => {
-    navigation.navigate("buildingInfoName", { name });
-  };
-
+  const { name, setName, voice, setVoice } = useContext(MyContext);
   const [isScanning, setScanning] = useState(false);
   const [devices, setDevices] = useState([]);
-
   const BleManagerModule = NativeModules.BleManager;
   const BleManagerEmitter = new NativeEventEmitter(BleManagerModule);
-
   // Start scanning for BLE devices
   const startScanning = () => {
     if (!isScanning) {
@@ -95,9 +58,10 @@ const ExploreScreen = ({ navigation }) => {
               item.name !== null &&
               (item.id === "E4:65:B8:83:DC:62" ||
                 item.id === "E4:65:B8:83:F6:AA" ||
-                item.id === "E4:65:B8:83:D8:8E")
+                item.id === "E4:65:B8:83:D8:8E" ||
+                item.id === "5C:01:3B:4B:97:96" ||
+                item.id === "8C:4F:00:2F:CB:CA")
           );
-
           setDevices((prevDevices) => {
             // Update RSSI for existing devices and add new ones
             const updatedDevices = filteredDevices.map((newDevice) => {
@@ -126,8 +90,10 @@ const ExploreScreen = ({ navigation }) => {
                 device.rssi > (max?.rssi ?? -Infinity) ? device : max,
               { rssi: -Infinity }
             );
-
             console.log("Highest RSSI Device:", highestRssiDevice);
+            if (highestRssiDevice && highestRssiDevice.name) {
+              setName(highestRssiDevice.name);
+            }
             return highestRssiDevice ? [highestRssiDevice] : [];
           });
         }
@@ -190,27 +156,42 @@ const ExploreScreen = ({ navigation }) => {
       if (!isScanning) {
         startScanning();
       }
-    }, 3000);
+    }, 2000);
 
     return () => clearInterval(interval); // Cleanup interval
   }, [isScanning]);
 
   // Render a single BLE device
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.bleCard}
-      onPress={() => {
-        handleInfoPress(item.name); //item.name huna parne ho
-      }}
-    >
-      <Image source={imageMap[item.name]} style={styles.buildingimage} />
-      <Text style={{ fontSize: 18, left: 5, fontWeight: "bold" }}>
-        {`You are near " ${item.name} " `}
-      </Text>
-      <Text style={{ position: "absolute", bottom: 0, right: 10, fontSize: 9 }}>
-        CLICK TO VIEW INFO
-      </Text>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity
+        style={styles.bleCard}
+        onPress={() => {
+          setVoice(false);
+          navigation.navigate("buildingInfoName"); //item.name huna parne ho
+        }}
+      >
+        <Image source={imageMap[item.name]} style={styles.buildingimage} />
+        <Text style={{ fontSize: 18, left: 5, fontWeight: "bold" }}>
+          {`You are near " ${item.name} " `}
+        </Text>
+        <Text
+          style={{ position: "absolute", bottom: 0, right: 10, fontSize: 9 }}
+        >
+          CLICK TO VIEW INFO
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          setVoice(true);
+          navigation.navigate("buildingInfoName"); //item.name huna parne ho
+        }}
+      >
+        <Ionicons name="mic" size={20} color="white" />
+        <Text style={styles.text}>Click to enable auto voice navigation</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   // UI
@@ -266,6 +247,24 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 20,
     overflow: "hidden",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#1E40AF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    margin: 20,
+  },
+  text: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

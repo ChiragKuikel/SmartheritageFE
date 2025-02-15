@@ -27,7 +27,7 @@
 //         value={password}
 //         onChangeText={setPassword}
 //       />
-      
+
 //       <TouchableOpacity style={styles.button} onPress={handleLogin}>
 //         <Text style={styles.buttonText}>Login</Text>
 //       </TouchableOpacity>
@@ -92,10 +92,15 @@
 
 // export default Login;
 
-
-
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // ✅ Store token
 import { useNavigation } from "@react-navigation/native"; // ✅ For navigation
 
@@ -104,38 +109,40 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigation = useNavigation(); // ✅ Get navigation instance
 
-
-  
   const handleLogin = async () => {
+    
     if (!email || !password) {
       Alert.alert("Error", "Please enter email and password");
       return;
     }
-  
+
     try {
-      console.log(email,password);
-      const response = await fetch("http://192.168.254.3:5028/userLogin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: email, // Ensure this matches what your API expects
-          password: password,
-        }),
-      });
-  
+      console.log(email, password);
+      const response = await fetch(
+        "http://10.5.6.0:5028/userLogin/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: email, // Ensure this matches what your API expects
+            password: password,
+          }),
+        }
+      );
+
       const data = await response.json();
       console.log(data);
-  
+
       if (response.ok) {
         const token = data.token; // ✅ Extract token from response
-  
+
         // ✅ Store token in AsyncStorage for future authenticated requests
         await AsyncStorage.setItem("token", token);
-  
+
         Alert.alert("Success", "Login Successful");
-        
+
         // ✅ Navigate to HomeScreen after successful login
         navigation.replace("HomeScreen");
       } else {
@@ -165,7 +172,7 @@ const Login = () => {
         value={password}
         onChangeText={setPassword}
       />
-      
+
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>

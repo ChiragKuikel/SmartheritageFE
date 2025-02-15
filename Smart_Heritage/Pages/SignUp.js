@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
 const Signup = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -8,22 +14,25 @@ const Signup = ({ navigation }) => {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch("http://192.168.254.3:5028/userRegistration", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
-  
+      const response = await fetch(
+        "http://10.5.6.0:5028/userRegistration",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        alert("Signup successful!");
+        alert("success", "Signup successful!");
         navigation.navigate("Login");
       } else {
         alert(data.message || "Signup failed. Please try again.");

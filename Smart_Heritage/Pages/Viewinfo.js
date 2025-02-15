@@ -12,12 +12,62 @@ import {
 import * as FileSystem from "expo-file-system";
 import { Image } from "react-native";
 import assets from "../assets/assets";
+import { Ionicons } from "@expo/vector-icons";
+import Tts from "react-native-tts";
+import { useContext } from "react";
+import { MyContext } from "../Provider";
 const BuildingInfo = ({ route }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [fileData, setFileData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
   const [reloadbutton, setReloadbutton] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const { name } = route.params;
+  const { name, setName, voice, setVoice } = useContext(MyContext);
+
+  useEffect(() => {
+    console.log("1st");
+    
+    if (voice) {
+      Tts.stop();
+      console.log("vitra");
+      handleVoice();
+    }
+  }, [name]);
+  handleVoice = () => {
+    console.log("2nd");
+    if (voice) {
+      setIsSpeaking(true);
+    } else if (!voice) {
+      setIsSpeaking(!isSpeaking);
+    }
+  };
+  useEffect(() => {
+    console.log("yoyo");
+    readFile();
+  }, []);
+  useEffect(() => {
+    if (hasMounted) {
+      setReloadbutton(true);
+    } else if (!hasMounted && !voice) {
+      setHasMounted(true);
+    } else if (voice) {
+      console.log("3rd");
+      readFile();
+    }
+  }, [name]);
+  useEffect(() => {
+    if (isSpeaking && filteredData) {
+      const textToRead = `${filteredData.Name} is a temple dedicated to ${filteredData.Deity}. It was built by ${filteredData.BuiltBy} in ${filteredData.BuiltIn}. ${filteredData.Details}`;
+      Tts.speak(textToRead);
+    } else {
+      Tts.stop();
+    }
+  }, [isSpeaking, filteredData]);
+  useEffect(() => {
+    return () => {
+      Tts.stop(); // Stops TTS when the component unmounts
+    };
+  }, []);
   const imageMap = {
     "Krishna Mandir": require("../assets/Krishnamandir.jpg"),
     "Bhimsen Temple": require("../assets/bhimsenmandir.jpg"),
@@ -58,89 +108,106 @@ const BuildingInfo = ({ route }) => {
     }
   };
 
-    useEffect(
-      () => {
-        readFile();
-      },[]
-    )
-    useEffect(
-    () =>{
-      if(hasMounted){
-      setReloadbutton(true);
-      }
-      else{
-        setHasMounted(true);
-      }
-    },[name]
-    )
   return (
     <View style={styles.container}>
-       {reloadbutton?  <View
-      style={{
-        position: 'absolute',
-        top: 10,
-        left: 20,
-        right: 20,
-        backgroundColor: '#ffffff',
-        borderRadius: 12,
-        padding: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
-        zIndex:20,
-      }}
-    >
-      <Image
-        source={assets.Krishnamandir} // Replace with your avatar URL
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          marginRight: 10,
-        }}
-      />
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 14 }}>You are near "Bhimsen Temple"</Text>
-        <TouchableOpacity>
-          <Text style={{ color: '#007bff', marginTop: 5 }}>Click to explore</Text>
-        </TouchableOpacity>
-      </View>
-    </View>: <Text>You are still near {name}</Text>}
-      <Image
-              source={imageMap[name]} // 'Krishnamandir ko thau ma name rakhna paryo'
-              style={styles.image}
-              resizeMode="cover"
-            />
-      <View style={styles.dataContainer}>
-        <Text style={styles.heading}>{name}</Text>
-      <ScrollView >
-        {filteredData ? (
-          <View>
-
-            <Text style={styles.fileText}>
-              <Text style={styles.bold}>Details:</Text> {filteredData.Details}
+      {reloadbutton ? (
+        <View
+          style={{
+            position: "absolute",
+            top: 10,
+            left: 20,
+            right: 20,
+            backgroundColor: "#ffffff",
+            borderRadius: 12,
+            padding: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
+            zIndex: 20,
+          }}
+        >
+          <Image
+            source={imageMap[name]} // Replace with your avatar URL
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              marginRight: 10,
+            }}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 14 }}>
+              You are near {name}
             </Text>
-            <Text style={styles.fileText}>
-              <Text style={styles.bold}>Built By:</Text> {filteredData.BuiltBy}
-            </Text>
-            <Text style={styles.fileText}>
-              <Text style={styles.bold}>Built In:</Text> {filteredData.BuiltIn}
-            </Text>
-            <Text style={styles.fileText}>
-              <Text style={styles.bold}>Deity:</Text> {filteredData.Deity}
-            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                readFile();
+              }}
+            >
+              <Text style={{ color: "#007bff", marginTop: 5 }}>
+                Click to explore
+              </Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <Text style={styles.fileText}>
-            No data available.
-          </Text>
-        )}
-      </ScrollView>
-      </View>
+        </View>
+      ) : (
+        <View></View>
+      )}
+      {filteredData ? (
+        <>
+          <Image
+            source={imageMap[filteredData.Name]} // 'Krishnamandir ko thau ma name rakhna paryo'
+            style={styles.image}
+            resizeMode="cover"
+          />
+          <View style={styles.dataContainer}>
+            <Text style={styles.heading}>{filteredData.Name}</Text>
+            {voice ? (
+              <View></View>
+            ) : (
+              <TouchableOpacity
+                style={[styles.button, isSpeaking && styles.activeButton]}
+                onPress={() => handleVoice()}
+              >
+                <Ionicons
+                  name={isSpeaking ? "mic-off" : "mic"}
+                  size={24}
+                  color="#ffffff"
+                />
+              </TouchableOpacity>
+            )}
+            <ScrollView>
+              {filteredData ? (
+                <View>
+                  <Text style={styles.fileText}>
+                    <Text style={styles.bold}>Details:</Text>{" "}
+                    {filteredData.Details}
+                  </Text>
+                  <Text style={styles.fileText}>
+                    <Text style={styles.bold}>Built By:</Text>{" "}
+                    {filteredData.BuiltBy}
+                  </Text>
+                  <Text style={styles.fileText}>
+                    <Text style={styles.bold}>Built In:</Text>{" "}
+                    {filteredData.BuiltIn}
+                  </Text>
+                  <Text style={styles.fileText}>
+                    <Text style={styles.bold}>Deity:</Text> {filteredData.Deity}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.fileText}>No data available.</Text>
+              )}
+            </ScrollView>
+          </View>
+        </>
+      ) : (
+        <Text>Loading.........</Text>
+      )}
     </View>
   );
 };
@@ -151,7 +218,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    position:'relative',
+    position: "relative",
   },
   text: {
     fontSize: 24,
@@ -162,31 +229,27 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: "black",
     marginBottom: 10,
-    textAlign:'center',
-    color:'white',
-
+    textAlign: "center",
+    color: "white",
   },
   dataContainer: {
     width: "100%",
-    padding:30,
+    padding: 30,
     backgroundColor: "#1a434e",
     maxHeight: 300,
     borderTopLeftRadius: 30,
     borderBottomLeftRadius: 0,
     borderTopRightRadius: 30,
     borderBottomRightRadius: 0,
-    marginTop:-30,
-    zIndex:20,
-    textDecorationColor:'white'
-
-
+    marginTop: -40,
+    zIndex: 20,
+    textDecorationColor: "white",
   },
   fileText: {
     fontSize: 16,
     color: "#333",
     marginBottom: 10,
-    color:'white',
-
+    color: "white",
   },
   bold: {
     fontWeight: "bold",
@@ -195,15 +258,30 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "60%",
     marginBottom: 0,
-    zIndex:10
-    
+    zIndex: 10,
   },
-  floatingbutton:{
-    position:'absolute',
-    top:0,
-    right:0,
-    backgroundColor:'red',
-    zIndex:30
+  floatingbutton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    backgroundColor: "red",
+    zIndex: 30,
+  },
+  button: {
+    backgroundColor: "#6200ea",
+    padding: 12,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    right: 5,
+    top: 10,
+  },
+  activeButton: {
+    backgroundColor: "#3700b3",
+    position: "absolute",
+    right: 5,
+    top: 10,
   },
 });
 

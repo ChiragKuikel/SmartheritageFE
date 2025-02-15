@@ -2,6 +2,14 @@
   "expo": {
     "name": "Smart_Heritage",
     "slug": "Smart_Heritage",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "Ionicons": "node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"
+        }
+      ]
+    ]
   }
 }
